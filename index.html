@@ -103,6 +103,10 @@ th { background: #ffd700; }
     opacity: 0.5;
 }
 
+.mc-hidden {
+    display: none !important;
+}
+
 .mai {
     position: fixed;
     top: -50px;
@@ -119,10 +123,12 @@ th { background: #ffd700; }
 
 <h1>🎊 Quay Lì Xì Đầu Năm 🎊</h1>
 <div style="text-align:center;margin-bottom:10px">
-    <button onclick="document.getElementById('mcModal').style.display='flex'">
+    <button id="btnLogin" onclick="document.getElementById('mcModal').style.display='flex'">
         🎤 MC Login
     </button>
-    <button onclick="logoutMC()">🚪 MC Logout</button>
+    <button id="btnLogout" onclick="logoutMC()" style="display:none" class="btn danger">
+        Đăng xuất MC
+    </button>
 </div>
 <div class="modal" id="mcModal">
     <div class="modal-content">
@@ -132,19 +138,15 @@ th { background: #ffd700; }
     </div>
 </div>
 
-<div class="container">
+<div class="container mc-config">
     <div class="panel">
         <h3>👥 Danh sách người</h3>
         <textarea id="names" rows="6"></textarea>
 
         <h3>💰 Mệnh giá : trọng số</h3>
-        <textarea id="amounts" rows="4"
-placeholder="20k:50
-50k:30
-100k:15
-200k:5"></textarea>
+        <textarea id="amounts" rows="4"></textarea>
 
-        <button class="mc-only" onclick="saveData()">💾 Lưu dữ liệu</button>
+        <button onclick="saveData()">💾 Lưu dữ liệu</button>
     </div>
 
     <div class="panel">
@@ -152,9 +154,10 @@ placeholder="20k:50
             <div id="pointer"></div>
             <canvas id="wheelCanvas" width="350" height="350"></canvas>
         </div>
-        <button class="mc-only" onclick="spinWheel()">🎉 QUAY</button>
+        <button onclick="spinWheel()">🎉 QUAY</button>
     </div>
 </div>
+
 
 <div class="container">
     <div class="panel">
@@ -194,6 +197,14 @@ const amountsInput = document.getElementById("amounts");
 const modal = document.getElementById("modal");
 const drum = document.getElementById("drum");
 const win = document.getElementById("win");
+const DEFAULT_AMOUNTS = [
+    { value: "10k", weight: 27 },
+    { value: "20k", weight: 49 },
+    { value: "50k", weight: 16 },
+    { value: "100k", weight: 7 },
+    { value: "200k", weight: 1 }
+];
+
 
 let wheel;
 let names = [];
@@ -223,10 +234,22 @@ function checkMC() {
 }
 
 function applyMCRole() {
-    document.querySelectorAll(".mc-only").forEach(btn => {
-        btn.classList.toggle("mc-locked", !isMC);
-    });
+    const config = document.querySelector(".mc-config");
+    const btnLogin = document.getElementById("btnLogin");
+    const btnLogout = document.getElementById("btnLogout");
+
+    if (isMC) {
+        config.classList.remove("mc-hidden");
+        btnLogin.style.display = "none";
+        btnLogout.style.display = "inline-block";
+    } else {
+        config.classList.add("mc-hidden");
+        btnLogin.style.display = "inline-block";
+        btnLogout.style.display = "none";
+    }
 }
+
+
 
 function loginMC() {
     const input = document.getElementById("mcPassword").value;
@@ -243,6 +266,13 @@ function loginMC() {
 
 function logoutMC() {
     localStorage.removeItem("mc_auth");
+
+    localStorage.removeItem("history");
+
+    history = [];
+
+    renderHistory();
+
     location.reload();
 }
 
@@ -258,16 +288,56 @@ function loadData() {
     renderHistory();
 }
 
+function useDefaultAmounts() {
+    weightedAmounts = [];
+    DEFAULT_AMOUNTS.forEach(item => {
+        for (let i = 0; i < item.weight; i++) {
+            weightedAmounts.push(item.value);
+        }
+    });
+
+    // Optional: hiển thị default lên UI cho MC thấy
+    amountsInput.value = DEFAULT_AMOUNTS
+        .map(i => `${i.value}:${i.weight}`)
+        .join("\n");
+}
+
+
 /* ---------- WEIGHT ---------- */
 function buildWeightedAmounts() {
     weightedAmounts = [];
-    amountsInput.value.split("\n").forEach(line => {
+
+    const lines = amountsInput.value
+        .split("\n")
+        .map(l => l.trim())
+        .filter(Boolean);
+
+    // Nếu không nhập gì → dùng default
+    if (lines.length === 0) {
+        useDefaultAmounts();
+        return;
+    }
+
+    lines.forEach(line => {
         if (!line.includes(":")) return;
+
         let [val, w] = line.split(":");
-        w = parseInt(w) || 1;
-        for (let i=0;i<w;i++) weightedAmounts.push(val);
+        val = val.trim();
+        w = parseInt(w);
+
+        if (!val || isNaN(w) || w <= 0) return;
+
+        for (let i = 0; i < w; i++) {
+            weightedAmounts.push(val);
+        }
     });
+
+    // Nếu tất cả dòng đều sai → fallback default
+    if (weightedAmounts.length === 0) {
+        useDefaultAmounts();
+    }
 }
+
 
 /* ---------- WHEEL ---------- */
 function buildWheel() {
