@@ -17,119 +17,57 @@ body {
 }
 h1 { text-align:center; color:#ffd700; }
 
-.container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    padding: 10px;
-}
-.panel {
-    background: rgba(0,0,0,.3);
-    border-radius: 16px;
-    padding: 15px;
-    flex: 1;
-    min-width: 280px;
-}
+.container { display:flex; flex-wrap:wrap; gap:15px; padding:10px; }
+.panel { background:rgba(0,0,0,.3); border-radius:16px; padding:15px; flex:1; min-width:280px; }
 
-textarea, input {
-    width: 100%;
-    padding: 10px;
-    border-radius: 10px;
-    border: none;
-    margin-bottom: 10px;
+textarea,input {
+    width:100%; padding:10px; border-radius:10px; border:none; margin-bottom:10px;
 }
 
 button {
-    width: 100%;
-    padding: 12px;
-    border-radius: 12px;
-    border: none;
-    font-weight: bold;
-    background: #ffd700;
-    color: #900;
+    width:100%; padding:12px; border-radius:12px; border:none;
+    font-weight:bold; background:#ffd700; color:#900;
 }
 
-#wheel-container {
-    max-width: 360px;
-    margin: auto;
-    position: relative;
-}
+#wheel-container { max-width:360px; margin:auto; position:relative; }
 #pointer {
-    position: absolute;
-    top: -6px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0; height: 0;
-    border-left: 16px solid transparent;
-    border-right: 16px solid transparent;
-    border-bottom: 28px solid red;
-    z-index: 10;
+    position:absolute; top:-6px; left:50%; transform:translateX(-50%);
+    width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;
+    border-bottom:28px solid red; z-index:10;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #fff;
-    color: #333;
-    border-radius: 10px;
-    font-size: 14px;
+.amount-btn {
+    padding:8px 14px; border-radius:20px; border:none;
+    font-weight:bold; background:#fff; color:#900; cursor:pointer;
 }
-th, td {
-    padding: 6px;
-    border-bottom: 1px solid #ddd;
-    text-align: center;
-}
-th { background: #ffd700; }
+.amount-btn.active { background:#00ffcc; color:#000; }
+
+table { width:100%; border-collapse:collapse; background:#fff; color:#333; border-radius:10px; font-size:14px; }
+th,td { padding:6px; border-bottom:1px solid #ddd; text-align:center; }
+th { background:#ffd700; }
 
 .modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.6);
-    display: none;
-    align-items: center;
-    justify-content: center;
+    position:fixed; inset:0; background:rgba(0,0,0,.6);
+    display:none; align-items:center; justify-content:center;
 }
 .modal-content {
-    background: #fff;
-    color: #333;
-    padding: 20px;
-    border-radius: 16px;
-    width: 300px;
-    text-align: center;
+    background:#fff; color:#333; padding:20px;
+    border-radius:16px; width:300px; text-align:center;
 }
 
-.mc-locked {
-    pointer-events: none;
-    opacity: 0.5;
-}
-
-.mc-hidden {
-    display: none !important;
-}
-
-.mai {
-    position: fixed;
-    top: -50px;
-    font-size: 20px;
-    animation: fall linear infinite;
-}
-@keyframes fall {
-    to { transform: translateY(110vh) rotate(360deg); }
-}
+.mc-hidden { display:none!important; }
 </style>
 </head>
 
 <body>
 
 <h1>🎊 Quay Lì Xì Đầu Năm 🎊</h1>
+
 <div style="text-align:center;margin-bottom:10px">
-    <button id="btnLogin" onclick="document.getElementById('mcModal').style.display='flex'">
-        🎤 MC Login
-    </button>
-    <button id="btnLogout" onclick="logoutMC()" style="display:none" class="btn danger">
-        Đăng xuất MC
-    </button>
+    <button id="btnLogin" onclick="document.getElementById('mcModal').style.display='flex'">🎤 MC Login</button>
+    <button id="btnLogout" onclick="logoutMC()" style="display:none">Đăng xuất MC</button>
 </div>
+
 <div class="modal" id="mcModal">
     <div class="modal-content">
         <h3>🎤 Đăng nhập MC</h3>
@@ -143,21 +81,35 @@ th { background: #ffd700; }
         <h3>👥 Danh sách người</h3>
         <textarea id="names" rows="6"></textarea>
 
-        <h3>💰 Mệnh giá : trọng số</h3>
-        <textarea id="amounts" rows="4"></textarea>
+        <div id="amountConfig">
+            <h3>💰 Mệnh giá : trọng số</h3>
+            <textarea id="amounts" rows="4"></textarea>
+        </div>
 
         <button onclick="saveData()">💾 Lưu dữ liệu</button>
+        <button onclick="document.getElementById('amountConfig').style.display='block'">⚙️ Hiện cấu hình tiền</button>
     </div>
 
     <div class="panel">
+
+        <!-- MODE SELECT -->
+        <h3>🎯 Chế độ mệnh giá</h3>
+        <select id="amountMode" onchange="changeAmountMode()" style="width:100%;padding:10px;border-radius:10px;margin-bottom:10px">
+            <option value="manual">🎯 Chọn mệnh giá thủ công</option>
+            <option value="random">🎲 Random mệnh giá</option>
+        </select>
+
+        <h3>🎁 Chọn mệnh giá quay</h3>
+        <div id="amountButtons" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
+
         <div id="wheel-container">
             <div id="pointer"></div>
             <canvas id="wheelCanvas" width="350" height="350"></canvas>
         </div>
+
         <button onclick="spinWheel()">🎉 QUAY</button>
     </div>
 </div>
-
 
 <div class="container">
     <div class="panel">
@@ -173,11 +125,7 @@ th { background: #ffd700; }
             </thead>
             <tbody id="historyBody"></tbody>
         </table>
-
-        <h3 style="margin-top:10px">
-            💰 Tổng tiền đã phát:
-            <span id="totalMoney">0</span>
-        </h3>
+        <h3 style="margin-top:10px">💰 Tổng tiền đã phát: <span id="totalMoney">0</span></h3>
     </div>
 </div>
 
@@ -188,260 +136,184 @@ th { background: #ffd700; }
     </div>
 </div>
 
-<audio id="drum" src="https://assets.mixkit.co/sfx/preview/mixkit-drum-roll-566.mp3"></audio>
-<audio id="win" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3"></audio>
-
 <script>
 const namesInput = document.getElementById("names");
 const amountsInput = document.getElementById("amounts");
 const modal = document.getElementById("modal");
-const drum = document.getElementById("drum");
-const win = document.getElementById("win");
+
 const DEFAULT_AMOUNTS = [
-    { value: "10k", weight: 27 },
-    { value: "20k", weight: 49 },
-    { value: "50k", weight: 16 },
-    { value: "100k", weight: 7 },
-    { value: "200k", weight: 1 }
+    { value:"10k", weight:50 },
+    { value:"50k", weight:30 },
+    { value:"100k", weight:15 },
+    { value:"200k", weight:5 }
 ];
 
+let wheel, names=[], weightedAmounts=[], history=[], currentAmount=null;
 
-let wheel;
-let names = [];
-let weightedAmounts = [];
-let history = [];
-
-/* ---------- STORAGE ---------- */
-function saveData() {
-    if (!isMC) return alert("Chỉ MC mới được thao tác");
-
-    localStorage.setItem("names", namesInput.value);
-    localStorage.setItem("amounts", amountsInput.value);
-    loadData();
-}
-
-const MC_PASSWORD = "tet2026";
-let isMC = false;
-
-function hash(text) {
-    return btoa(text);
-}
-
-function checkMC() {
-    const saved = localStorage.getItem("mc_auth");
-    isMC = saved === hash(MC_PASSWORD);
+/* ===== MC LOGIN ===== */
+const MC_PASSWORD="tet2026";
+let isMC=false;
+function hash(t){return btoa(t);}
+function checkMC(){
+    isMC = localStorage.getItem("mc_auth")===hash(MC_PASSWORD);
     applyMCRole();
 }
-
-function applyMCRole() {
-    const config = document.querySelector(".mc-config");
-    const btnLogin = document.getElementById("btnLogin");
-    const btnLogout = document.getElementById("btnLogout");
-
-    if (isMC) {
+function applyMCRole(){
+    const config=document.querySelector(".mc-config");
+    const btnLogin=document.getElementById("btnLogin");
+    const btnLogout=document.getElementById("btnLogout");
+    if(isMC){
         config.classList.remove("mc-hidden");
-        btnLogin.style.display = "none";
-        btnLogout.style.display = "inline-block";
+        btnLogin.style.display="none";
+        btnLogout.style.display="inline-block";
     } else {
         config.classList.add("mc-hidden");
-        btnLogin.style.display = "inline-block";
-        btnLogout.style.display = "none";
+        btnLogin.style.display="inline-block";
+        btnLogout.style.display="none";
     }
 }
+function loginMC(){
+    if(hash(document.getElementById("mcPassword").value)===hash(MC_PASSWORD)){
+        localStorage.setItem("mc_auth",hash(MC_PASSWORD));
+        isMC=true; applyMCRole();
+        document.getElementById("mcModal").style.display="none";
+    } else alert("Sai mật khẩu");
+}
+function logoutMC(){ localStorage.clear(); location.reload(); }
 
-
-
-function loginMC() {
-    const input = document.getElementById("mcPassword").value;
-    if (hash(input) === hash(MC_PASSWORD)) {
-        localStorage.setItem("mc_auth", hash(MC_PASSWORD));
-        isMC = true;
-        applyMCRole();
-        document.getElementById("mcModal").style.display = "none";
-        alert("Đăng nhập MC thành công!");
-    } else {
-        alert("Sai mật khẩu!");
-    }
+/* ===== SAVE & LOAD ===== */
+function saveData(){
+    if(!isMC) return alert("Chỉ MC thao tác");
+    localStorage.setItem("names",namesInput.value);
+    localStorage.setItem("amounts",amountsInput.value);
+    loadData();
+    document.getElementById("amountConfig").style.display="none";
 }
 
-function logoutMC() {
-    localStorage.removeItem("mc_auth");
-
-    localStorage.removeItem("history");
-
-    history = [];
-
-    renderHistory();
-
-    location.reload();
-}
-
-
-function loadData() {
-    namesInput.value = localStorage.getItem("names") || "";
-    amountsInput.value = localStorage.getItem("amounts") || "";
-    history = JSON.parse(localStorage.getItem("history") || "[]");
+function loadData(){
+    namesInput.value = localStorage.getItem("names")||"";
+    amountsInput.value = localStorage.getItem("amounts")||"";
+    history = JSON.parse(localStorage.getItem("history")||"[]");
 
     names = namesInput.value.split("\n").map(n=>n.trim()).filter(Boolean);
     buildWeightedAmounts();
     buildWheel();
+    renderAmountButtons();
     renderHistory();
+
+    if(localStorage.getItem("amounts")) document.getElementById("amountConfig").style.display="none";
+    changeAmountMode();
 }
 
-function useDefaultAmounts() {
-    weightedAmounts = [];
-    DEFAULT_AMOUNTS.forEach(item => {
-        for (let i = 0; i < item.weight; i++) {
-            weightedAmounts.push(item.value);
-        }
-    });
-
-    // Optional: hiển thị default lên UI cho MC thấy
-    amountsInput.value = DEFAULT_AMOUNTS
-        .map(i => `${i.value}:${i.weight}`)
-        .join("\n");
-}
-
-
-/* ---------- WEIGHT ---------- */
-function buildWeightedAmounts() {
-    weightedAmounts = [];
-
-    const lines = amountsInput.value
-        .split("\n")
-        .map(l => l.trim())
-        .filter(Boolean);
-
-    // Nếu không nhập gì → dùng default
-    if (lines.length === 0) {
-        useDefaultAmounts();
+/* ===== WEIGHT BUILD ===== */
+function buildWeightedAmounts(){
+    weightedAmounts=[];
+    const lines = amountsInput.value.split("\n").map(l=>l.trim()).filter(Boolean);
+    if(lines.length===0){
+        DEFAULT_AMOUNTS.forEach(i=>{
+            for(let j=0;j<i.weight;j++) weightedAmounts.push(i.value);
+        });
         return;
     }
-
-    lines.forEach(line => {
-        if (!line.includes(":")) return;
-
-        let [val, w] = line.split(":");
-        val = val.trim();
-        w = parseInt(w);
-
-        if (!val || isNaN(w) || w <= 0) return;
-
-        for (let i = 0; i < w; i++) {
-            weightedAmounts.push(val);
-        }
+    lines.forEach(l=>{
+        if(!l.includes(":")) return;
+        let [v,w]=l.split(":");
+        v=v.trim(); w=parseInt(w);
+        if(!v||!w) return;
+        for(let i=0;i<w;i++) weightedAmounts.push(v);
     });
-
-    // Nếu tất cả dòng đều sai → fallback default
-    if (weightedAmounts.length === 0) {
-        useDefaultAmounts();
-    }
 }
 
+/* ===== AMOUNT BUTTONS ===== */
+function renderAmountButtons(){
+    const box=document.getElementById("amountButtons");
+    box.innerHTML="";
+    [...new Set(weightedAmounts)].forEach(v=>{
+        const b=document.createElement("button");
+        b.className="amount-btn";
+        b.innerText=v;
+        b.onclick=()=>{
+            document.querySelectorAll(".amount-btn").forEach(x=>x.classList.remove("active"));
+            b.classList.add("active");
+            currentAmount=v;
+        };
+        box.appendChild(b);
+    });
+}
 
-/* ---------- WHEEL ---------- */
-function buildWheel() {
-    if (!names.length) return;
-    if (wheel) wheel.stopAnimation(false);
+/* ===== MODE ===== */
+function changeAmountMode(){
+    const mode=document.getElementById("amountMode").value;
+    const box=document.getElementById("amountButtons");
+    box.style.display = (mode==="random") ? "none" : "flex";
+}
 
+/* ===== WHEEL ===== */
+function buildWheel(){
+    if(!names.length) return;
     wheel = new Winwheel({
-        canvasId: 'wheelCanvas',
-        numSegments: names.length,
-        segments: names.map((n,i)=>({
-            fillStyle: i%2?'#ffeb3b':'#ff5252',
-            text: n
-        })),
-        animation: {
-            type: 'spinToStop',
-            spins: 8,
-            duration: 5,
-            callbackFinished: onFinished
-        }
+        canvasId:'wheelCanvas',
+        numSegments:names.length,
+        segments:names.map((n,i)=>({ fillStyle:i%2?'#ffeb3b':'#ff5252', text:n })),
+        animation:{ type:'spinToStop', spins:8, duration:5, callbackFinished:onFinished }
     });
 }
 
-function spinWheel() {
-    if (!isMC) return alert("Chỉ MC mới được quay");
+function pickWeightedAmount(){
+    return weightedAmounts[Math.floor(Math.random()*weightedAmounts.length)];
+}
 
-    if (!names.length || !weightedAmounts.length) {
-        alert("Thiếu dữ liệu");
-        return;
+function spinWheel(){
+    if(!isMC) return alert("Chỉ MC được quay");
+    const mode=document.getElementById("amountMode").value;
+
+    if(mode==="manual"){
+        if(!currentAmount) return alert("Chưa chọn mệnh giá");
+    } else {
+        currentAmount = pickWeightedAmount();
+        console.log("Random amount:", currentAmount); // MC xem trong console
     }
-    
-    drum.currentTime = 0;
-    drum.play();
+
     wheel.startAnimation();
 }
 
-/* ---------- FINISH ---------- */
-function onFinished(seg) {
-    win.currentTime = 0;
-    win.play();
-
+/* ===== FINISH ===== */
+function onFinished(seg){
     const winner = seg.text;
-    const amount = weightedAmounts[Math.floor(Math.random()*weightedAmounts.length)];
+    const amount = currentAmount;
 
-    history.push({
-        name: winner,
-        amount: amount,
-        time: new Date().toLocaleString("vi-VN")
-    });
-    localStorage.setItem("history", JSON.stringify(history));
+    history.push({name:winner,amount,time:new Date().toLocaleString("vi-VN")});
+    localStorage.setItem("history",JSON.stringify(history));
 
-    names = names.filter(n => n !== winner);
+    names = names.filter(n=>n!==winner);
     namesInput.value = names.join("\n");
-    localStorage.setItem("names", namesInput.value);
+    localStorage.setItem("names",namesInput.value);
 
-    document.getElementById("resultText").innerText =
-        `🎉 ${winner} nhận ${amount}!`;
+    document.getElementById("resultText").innerText = `🎉 ${winner} nhận ${amount}!`;
+    modal.style.display="flex";
 
-    firework();
-    modal.style.display = "flex";
-
+    currentAmount=null;
+    document.querySelectorAll(".amount-btn").forEach(b=>b.classList.remove("active"));
     buildWheel();
     renderHistory();
 }
 
-/* ---------- HISTORY ---------- */
-function renderHistory() {
-    const tbody = document.getElementById("historyBody");
-    tbody.innerHTML = "";
-    let total = 0;
-
+/* ===== HISTORY ===== */
+function renderHistory(){
+    const tbody=document.getElementById("historyBody");
+    tbody.innerHTML="";
+    let total=0;
     history.forEach((h,i)=>{
-        const money = parseInt(h.amount);
-        if (!isNaN(money)) total += money;
-
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${i+1}</td>
-            <td>${h.name}</td>
-            <td>${h.amount}</td>
-            <td>${h.time}</td>`;
-        tbody.appendChild(tr);
+        const m=parseInt(h.amount);
+        if(!isNaN(m)) total+=m;
+        tbody.innerHTML+=`<tr><td>${i+1}</td><td>${h.name}</td><td>${h.amount}</td><td>${h.time}</td></tr>`;
     });
-
-    document.getElementById("totalMoney").innerText = total.toLocaleString() + "k";
+    document.getElementById("totalMoney").innerText = total + "k";
 }
 
-function closeModal() {
-    modal.style.display = "none";
-}
+function closeModal(){ modal.style.display="none"; }
 
-/* ---------- EFFECT ---------- */
-function firework() {
-    for (let i=0;i<20;i++) {
-        const f = document.createElement("div");
-        f.className = "mai";
-        f.innerText = "🌸";
-        f.style.left = Math.random()*100 + "vw";
-        f.style.animationDuration = 3 + Math.random()*3 + "s";
-        document.body.appendChild(f);
-        setTimeout(()=>f.remove(),6000);
-    }
-}
-
-/* ---------- INIT ---------- */
+/* INIT */
 checkMC();
 loadData();
 </script>
